@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Authentication - {{ hospital.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Importing a clean Sans-serif (Inter) and an elegant Serif (Playfair Display) for the headings -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+        }
+        .font-serif-elegant {
+            font-family: 'Playfair Display', serif;
+        }
+        /* Minimalist Alphabet Captcha */
+        .captcha-text {
+            font-family: 'Space Mono', monospace;
+            letter-spacing: 0.3em;
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(0,0,0,0.05) 4px, rgba(0,0,0,0.05) 8px);
+        }
+        
+        /* Custom input styling to match the reference */
+        .minimal-input {
+            background-color: #f5f5f5;
+            transition: background-color 0.3s ease;
+        }
+        .minimal-input:focus {
+            background-color: #eeeeee;
+            outline: none;
+        }
+    </style>
+</head>
+<body class="relative min-h-screen flex items-center justify-center p-4 sm:p-8 overflow-hidden">
+    
+    <!-- Dynamic Blurred Background -->
+    <div id="page-bg" class="absolute inset-0 bg-cover bg-center bg-no-repeat scale-110 blur-xl opacity-40 z-0 transition-all duration-1000"></div>
+    <div class="absolute inset-0 bg-[#f8f9fa]/80 z-0"></div> <!-- Light overlay to ensure the white card pops -->
+
+    <!-- Main Split Card Container -->
+    <div class="relative z-10 w-full max-w-[1100px] bg-[#fdfdfd] rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] flex flex-col md:flex-row overflow-hidden border border-white/50 p-2 sm:p-3">
+        
+        <!-- Left Side: Dynamic Hospital Image (Inset) -->
+        <div class="w-full md:w-1/2 h-[300px] md:h-[650px] rounded-[1.5rem] overflow-hidden relative">
+            <div id="card-img" class="absolute inset-0 bg-cover bg-center transition-all duration-1000"></div>
+            <!-- Optional subtle gradient over image for depth -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+        </div>
+
+        <!-- Right Side: Minimalist Login Form -->
+        <div class="w-full md:w-1/2 flex flex-col justify-between px-8 py-10 md:px-14 md:py-12 bg-[#fdfdfd]">
+            
+            <!-- Top: Back Link -->
+            <div>
+                <a href="/" class="inline-flex items-center text-sm text-gray-800 hover:text-black transition-colors font-medium">
+                    <i class="fas fa-arrow-left mr-2 text-xs"></i> Back
+                </a>
+            </div>
+
+            <!-- Middle: Headings & Form -->
+            <div class="mt-12 mb-8">
+                <p class="text-gray-800 text-lg mb-2">Login to</p>
+                <h1 class="font-serif-elegant text-5xl md:text-6xl text-black leading-[1.1] tracking-tight mb-10">
+                    {{ hospital.name }}<br>
+                    <span class="text-gray-500 italic text-4xl">Admin Portal</span>
+                </h1>
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="mb-6 p-3 rounded-lg text-sm flex items-center {% if category == 'error' %}bg-red-50 text-red-600{% else %}bg-green-50 text-green-600{% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" class="space-y-4">
+                    
+                    <!-- MULTI-TAB CAPTCHA FIX: Hidden ID Field -->
+                    <input type="hidden" name="captcha_id" value="{{ captcha_id }}">
+
+                    <!-- ID Input -->
+                    <input type="text" name="admin_id" placeholder="Enter admin ID" required 
+                        class="minimal-input w-full px-5 py-4 rounded-xl text-sm text-gray-900 placeholder-gray-500 border-none">
+                    
+                    <!-- Password Input -->
+                    <input type="password" name="password" placeholder="Enter password" required 
+                        class="minimal-input w-full px-5 py-4 rounded-xl text-sm text-gray-900 placeholder-gray-500 border-none">
+                    
+                    <!-- Captcha Input (Matched to minimalist style) -->
+                    <div class="flex items-center gap-3 pt-2">
+                        <div class="minimal-input rounded-xl px-4 py-3 flex items-center justify-center w-1/3">
+                            <span class="captcha-text text-lg font-bold text-gray-800 select-none relative inline-block">
+                                <span class="absolute top-1/2 left-0 w-full h-[1.5px] bg-gray-500/50 transform -translate-y-1/2 rotate-[-5deg]"></span>
+                                {{ captcha_text }}
+                            </span>
+                        </div>
+                        <input type="text" name="captcha" placeholder="Enter captcha" required autocomplete="off" 
+                            class="minimal-input w-2/3 px-5 py-4 rounded-xl text-sm text-gray-900 placeholder-gray-500 border-none uppercase">
+                    </div>
+
+                    <!-- Action Row -->
+                    <div class="pt-4 flex items-center justify-between">
+                        <a href="#" class="text-sm text-gray-600 hover:text-black transition-colors">
+                            Need access? <span class="font-semibold underline underline-offset-4">Contact IT</span>
+                        </a>
+                        <button type="submit" class="bg-black hover:bg-gray-800 text-white px-8 py-3.5 rounded-full text-sm font-medium transition-all shadow-md hover:shadow-lg">
+                            Login
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Bottom: Footer / Logo Area -->
+            <div class="flex items-center gap-4 mt-auto pt-8 border-t border-gray-100">
+                <div class="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center text-lg">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="text-xs text-gray-600 leading-tight">
+                    <span class="font-bold text-gray-900 block text-base">{{ hospital.name }}</span>
+                    Secure Administrative Network for<br>Authorized Personnel.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Script for Dynamic Hospital Images -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const hospitalName = "{{ hospital.name | default('Central Medical') }}";
+            
+            // A curated array of high-quality hospital / medical architecture images
+            const hospitalImages = [
+                'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=2000&q=80', // Modern white building
+                'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=2000&q=80', // Glass medical facility
+                'https://images.unsplash.com/photo-1538108149393-cebb47ac17e4?auto=format&fit=crop&w=2000&q=80', // Clean hospital corridor/architecture
+                'https://images.unsplash.com/photo-1632833239869-a37e3a5806d2?auto=format&fit=crop&w=2000&q=80', // Hospital exterior
+                'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=2000&q=80', // Medical lab/clean room aesthetics
+                'https://images.unsplash.com/photo-1504439468489-c8920d786a2b?auto=format&fit=crop&w=2000&q=80', // Clinic exterior
+                'https://images.unsplash.com/photo-1512678080530-7760d81faba6?auto=format&fit=crop&w=2000&q=80'  // Modern architecture
+            ];
+            
+            // Hash the hospital name to always pick the same image for the same hospital
+            let hash = 0;
+            for (let i = 0; i < hospitalName.length; i++) {
+                hash = hospitalName.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            
+            // Select image based on hash
+            const index = Math.abs(hash) % hospitalImages.length;
+            const selectedImage = `url('${hospitalImages[index]}')`;
+            
+            // Apply to the left panel card image
+            document.getElementById('card-img').style.backgroundImage = selectedImage;
+            
+            // Apply to the background for the blurred effect
+            document.getElementById('page-bg').style.backgroundImage = selectedImage;
+        });
+    </script>
+</body>
+</html>

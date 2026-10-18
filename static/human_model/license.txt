@@ -1,0 +1,11 @@
+Model Information:
+* title:	Anime girl
+* source:	https://sketchfab.com/3d-models/anime-girl-15fa11a22b394f65b5b219eac69c74dd
+* author:	nebula075 (https://sketchfab.com/nebula075)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Anime girl" (https://sketchfab.com/3d-models/anime-girl-15fa11a22b394f65b5b219eac69c74dd) by nebula075 (https://sketchfab.com/nebula075) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

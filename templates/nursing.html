@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ hospital.name }} - Ward Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            background-color: #050505; 
+            color: #f8fafc; 
+            font-family: 'Inter', sans-serif; 
+            overflow-x: hidden;
+        }
+        
+        /* Premium Glowing Pulse Animation */
+        @keyframes pulseGlow {
+            0%, 100% { filter: brightness(1); transform: scale(1); }
+            50% { filter: brightness(1.15); transform: scale(1.01); }
+        }
+        .animate-glow {
+            animation: pulseGlow 3s infinite ease-in-out;
+        }
+
+        /* NEON BLUE BORDER UTILITY (For main containers only) */
+        .neon-blue-box {
+            border: 1px solid rgba(59, 130, 246, 0.6) !important;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.15), inset 0 0 15px rgba(59, 130, 246, 0.05) !important;
+            transition: all 0.3s ease;
+        }
+        .neon-blue-box:hover {
+            border-color: rgba(59, 130, 246, 0.9) !important;
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.35), inset 0 0 20px rgba(59, 130, 246, 0.15) !important;
+        }
+
+        /* Modern Dark Glass Panel */
+        .glass-panel { 
+            background: rgba(12, 12, 12, 0.85); 
+            backdrop-filter: blur(16px); 
+        }
+
+        /* Ward Room with Dark Grid Pattern */
+        .ward-room { 
+            background-color: #0a0a0a;
+            background-image: radial-gradient(#262626 1px, transparent 1px);
+            background-size: 24px 24px;
+            position: relative; 
+            border-radius: 24px;
+        }
+
+        /* Premium Bed Graphics & Animations */
+        .bed-wrapper {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .bed-wrapper:hover {
+            transform: translateY(-10px) scale(1.05);
+            z-index: 20;
+        }
+
+        .bed-graphic { 
+            width: 56px; 
+            height: 96px; 
+            border: 2px solid #333; 
+            border-radius: 14px; 
+            position: relative; 
+            background: #121212; 
+            box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .bed-pillow { 
+            position: absolute; 
+            top: 6px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: 36px; 
+            height: 18px; 
+            background: #262626; 
+            border: 1px solid #404040; 
+            border-radius: 8px; 
+            transition: all 0.3s ease;
+        }
+        .bed-blanket { 
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+            height: 60px; 
+            background: #1a1a1a; 
+            border-top: 1px solid #333; 
+            border-radius: 0 0 12px 12px; 
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 6px;
+            transition: all 0.3s ease;
+        }
+
+        /* Neon Status Colors for Dark Theme */
+        .status-available .bed-graphic { border-color: rgba(16, 185, 129, 0.6); }
+        .status-available:hover .bed-graphic { box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+        .status-available .bed-blanket { border-top-color: rgba(16, 185, 129, 0.4); background: linear-gradient(to top, rgba(16,185,129,0.1), transparent); }
+        
+        .status-occupied .bed-graphic { border-color: rgba(244, 63, 94, 0.6); }
+        .status-occupied:hover .bed-graphic { box-shadow: 0 0 20px rgba(244, 63, 94, 0.4); }
+        .status-occupied .bed-blanket { border-top-color: rgba(244, 63, 94, 0.4); background: linear-gradient(to top, rgba(244,63,94,0.1), transparent); }
+        
+        .status-cleaning .bed-graphic { border-color: rgba(251, 191, 36, 0.6); }
+        .status-cleaning:hover .bed-graphic { box-shadow: 0 0 20px rgba(251, 191, 36, 0.4); }
+        .status-cleaning .bed-blanket { border-top-color: rgba(251, 191, 36, 0.4); background: linear-gradient(to top, rgba(251,191,36,0.1), transparent); }
+        
+        .status-hold .bed-graphic { border-color: rgba(168, 85, 247, 0.6); }
+        .status-hold:hover .bed-graphic { box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); }
+        .status-hold .bed-blanket { border-top-color: rgba(168, 85, 247, 0.4); background: linear-gradient(to top, rgba(168,85,247,0.1), transparent); }
+
+        /* Dark Inputs */
+        .meta-input { 
+            background: #171717; 
+            border: 1px solid #3b82f6; 
+            color: #fff; 
+            transition: all 0.25s ease; 
+        }
+        .meta-input:focus { 
+            border-color: #60a5fa; 
+            outline: none; 
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.3); 
+            background: #0a0a0a;
+        }
+        .meta-input:disabled { 
+            opacity: 0.5; 
+            cursor: not-allowed; 
+            background: #111; 
+            border-style: dashed;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #60a5fa; }
+        
+        select option { background: #171717; color: #fff; }
+    </style>
+</head>
+<body class="p-4 md:p-6 lg:p-8 flex flex-col md:flex-row gap-8 min-h-screen">
+
+    <!-- Sidebar / Dashboard Menu -->
+    <div class="w-full md:w-80 shrink-0 space-y-6">
+        <!-- Main panel keeps the neon blue border -->
+        <div class="glass-panel neon-blue-box p-6 rounded-[24px]">
+            <!-- Header Info -->
+            <div class="flex items-center gap-4 mb-2">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 text-white flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.4)]">
+                    <i class="fas fa-hospital text-xl"></i>
+                </div>
+                <div>
+                    <!-- Distinct Cyan/Blue Gradient for Hospital Name -->
+                    <h1 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 leading-tight drop-shadow-[0_0_5px_rgba(6,182,212,0.3)]">{{ hospital.name }}</h1>
+                    <p class="text-[10px] text-blue-400 font-bold uppercase tracking-widest mt-0.5"><i class="fas fa-shield-alt mr-1"></i>Secure Session</p>
+                </div>
+            </div>
+            
+            <!-- distinct border/background for Officer -->
+            <div class="flex items-center gap-3 mt-6 p-3 bg-neutral-900 border border-neutral-800 rounded-xl cursor-default hover:border-amber-500/30 transition-all">
+                <div class="w-9 h-9 rounded-full bg-black border border-amber-500/50 flex items-center justify-center text-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.2)]">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <div>
+                    <p class="text-[9px] text-neutral-500 font-bold uppercase tracking-widest">Officer on Duty</p>
+                    <!-- Distinct Amber color for Officer Name -->
+                    <p class="text-sm font-black text-amber-400 drop-shadow-[0_0_5px_rgba(251,191,36,0.4)]">{{ username }}</p>
+                </div>
+            </div>
+            
+            <!-- OVERALL HOSPITAL SUMMARY (Semantic borders applied to small boxes) -->
+            <div class="mt-8 mb-6">
+                <h3 class="text-[11px] font-extrabold uppercase tracking-widest text-neutral-400 mb-4 flex items-center justify-between">
+                    <span><i class="fas fa-globe mr-2"></i> Overall Hospital</span>
+                    <span class="flex h-2 w-2 relative">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                    </span>
+                </h3>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Total (Neutral Border) -->
+                    <div class="col-span-2 bg-neutral-900 border border-neutral-700 shadow-[0_0_15px_rgba(255,255,255,0.05)] rounded-xl p-4 text-white relative overflow-hidden group hover:border-neutral-500 transition-all">
+                        <i class="fas fa-building absolute -right-2 -bottom-4 text-6xl text-white opacity-5 group-hover:scale-110 transition-transform duration-500"></i>
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1 relative z-10">Total Capacity</p>
+                        <p class="text-4xl font-black relative z-10 tracking-tight" id="global-total">0</p>
+                    </div>
+                    
+                    <!-- Available (Green Border) -->
+                    <div class="bg-gradient-to-b from-emerald-900/20 to-neutral-900 border border-emerald-500/50 rounded-xl p-4 animate-glow group cursor-default shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+                        <p class="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1 opacity-90 drop-shadow-[0_0_5px_rgba(16,185,129,0.3)]">Available</p>
+                        <p class="text-3xl font-black text-emerald-300" id="global-available">0</p>
+                    </div>
+                    
+                    <!-- Occupied (Red Border) -->
+                    <div class="bg-gradient-to-b from-rose-900/20 to-neutral-900 border border-rose-500/50 rounded-xl p-4 animate-glow group cursor-default shadow-[0_0_15px_rgba(244,63,94,0.15)]" style="animation-delay: 0.2s;">
+                        <p class="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1 opacity-90 drop-shadow-[0_0_5px_rgba(244,63,94,0.3)]">Occupied</p>
+                        <p class="text-3xl font-black text-rose-300" id="global-occupied">0</p>
+                    </div>
+                    
+                    <!-- Cleaning (Yellow Border) -->
+                    <div class="bg-gradient-to-b from-amber-900/20 to-neutral-900 border border-amber-500/50 rounded-xl p-4 animate-glow group cursor-default shadow-[0_0_15px_rgba(251,191,36,0.15)]" style="animation-delay: 0.4s;">
+                        <p class="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-1 opacity-90 drop-shadow-[0_0_5px_rgba(251,191,36,0.3)]">Cleaning</p>
+                        <p class="text-3xl font-black text-amber-300" id="global-cleaning">0</p>
+                    </div>
+                    
+                    <!-- Hold (Purple Border) -->
+                    <div class="bg-gradient-to-b from-purple-900/20 to-neutral-900 border border-purple-500/50 rounded-xl p-4 animate-glow group cursor-default shadow-[0_0_15px_rgba(168,85,247,0.15)]" style="animation-delay: 0.6s;">
+                        <p class="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-1 opacity-90 drop-shadow-[0_0_5px_rgba(168,85,247,0.3)]">On Hold</p>
+                        <p class="text-3xl font-black text-purple-300" id="global-hold">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-3 mt-8 mb-8">
+                <button onclick="document.getElementById('addBedModal').classList.remove('hidden')" class="w-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-3.5 rounded-xl text-sm font-black transition-all shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:shadow-[0_0_30px_rgba(59,130,246,0.6)] flex items-center justify-center gap-2 border border-blue-400">
+                    <i class="fas fa-plus-circle"></i> Deploy Infrastructure
+                </button>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-neutral-800">
+                <a href="/logout" class="flex items-center justify-center gap-2 w-full text-neutral-500 hover:bg-rose-900/20 hover:text-rose-500 px-4 py-3 rounded-xl text-sm font-bold transition-all">
+                    <i class="fas fa-power-off"></i> Disconnect System
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Floor Plan Area -->
+    <div class="flex-1 w-full" id="floors-container">
+        <!-- Wards rendered via JS -->
+    </div>
+
+    <!-- ADD BED MODAL -->
+    <div id="addBedModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex justify-center items-center p-4 transition-opacity">
+        <div class="bg-neutral-900 neon-blue-box p-6 md:p-8 rounded-[24px] w-full max-w-md transform transition-transform">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <h2 class="text-xl font-extrabold text-white">Add Infrastructure</h2>
+            </div>
+            <p class="text-sm text-neutral-400 mb-6 pl-13">Deploy a bed to one of your assigned floors.</p>
+            
+            <form id="addBedForm" class="space-y-4">
+                <div>
+                    <label class="text-[11px] font-bold text-blue-400 uppercase tracking-wide mb-1 block pl-1">Target Floor</label>
+                    <select id="bFloorSelect" required class="w-full meta-input px-4 py-3 rounded-xl text-sm font-semibold cursor-pointer">
+                        <option value="">Select Assigned Floor...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[11px] font-bold text-blue-400 uppercase tracking-wide mb-1 block pl-1">Identifier</label>
+                    <input type="text" id="bBedId" placeholder="e.g., BED-301" required class="w-full meta-input px-4 py-3 rounded-xl text-sm font-bold">
+                </div>
+                <div>
+                    <label class="text-[11px] font-bold text-blue-400 uppercase tracking-wide mb-1 block pl-1">Classification Type</label>
+                    <input type="text" id="bType" placeholder="e.g., Standard, ICU, Maternity" required class="w-full meta-input px-4 py-3 rounded-xl text-sm font-medium">
+                </div>
+                <div class="flex space-x-3 pt-6 border-t border-blue-900/30 mt-6">
+                    <button type="button" onclick="document.getElementById('addBedModal').classList.add('hidden')" class="flex-1 bg-neutral-800 hover:bg-neutral-700 text-white py-3 rounded-xl text-sm font-bold transition-colors border border-neutral-700">Cancel</button>
+                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-xl text-sm shadow-[0_0_15px_rgba(59,130,246,0.4)] transition-all border border-blue-400">Deploy Bed</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT/REMOVE BED MODAL -->
+    <div id="editBedModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex justify-center items-center p-4 transition-opacity">
+        <div class="bg-neutral-900 neon-blue-box p-6 md:p-8 rounded-[24px] w-full max-w-md">
+            <div class="flex justify-between items-start mb-6 pb-4 border-b border-blue-900/30">
+                <div>
+                    <h2 class="text-2xl font-black text-white tracking-tight" id="editBedTitle">BED-XXX</h2>
+                    <p class="text-xs text-blue-400/70 mt-1">Manage patient and bed status</p>
+                </div>
+                <span id="editBedType" class="text-[10px] font-extrabold uppercase tracking-wider bg-blue-900/30 text-blue-400 px-3 py-1.5 rounded-full border border-blue-500/50">Type</span>
+            </div>
+            
+            <form id="editBedForm" class="space-y-5">
+                <input type="hidden" id="editBedId">
+                <div>
+                    <label class="text-[11px] font-bold text-blue-400 uppercase tracking-wide mb-1 block pl-1">Operating Status</label>
+                    <select id="editStatus" onchange="toggleEditFields()" class="w-full meta-input px-4 py-3 rounded-xl text-sm font-bold cursor-pointer">
+                        <option value="Available">🟢 Available</option>
+                        <option value="Occupied">🔴 Occupied</option>
+                        <option value="Cleaning">🟡 Cleaning / Prep</option>
+                        <option value="Discharge Hold">🟣 Discharge Hold</option>
+                    </select>
+                </div>
+                <div class="space-y-4 p-5 bg-neutral-950 rounded-2xl border border-neutral-800 shadow-inner">
+                    <h3 class="text-[10px] font-extrabold text-blue-400 uppercase tracking-wider mb-2">Patient Information</h3>
+                    <input type="text" id="editPatientName" placeholder="Patient Full Name" class="w-full meta-input px-4 py-2.5 rounded-lg text-sm font-medium">
+                    <div class="flex gap-3">
+                        <input type="number" id="editPatientAge" placeholder="Age" class="w-1/3 meta-input px-4 py-2.5 rounded-lg text-sm font-medium">
+                        <input type="text" id="editDiagnosis" placeholder="Primary Diagnosis" class="w-2/3 meta-input px-4 py-2.5 rounded-lg text-sm font-medium">
+                    </div>
+                </div>
+                <div class="flex space-x-3 pt-4 border-t border-blue-900/30">
+                    <button type="button" onclick="closeEditModal()" class="flex-1 bg-neutral-800 hover:bg-neutral-700 text-white py-3 rounded-xl text-sm font-bold transition-colors border border-neutral-700">Cancel</button>
+                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-xl text-sm shadow-[0_0_15px_rgba(59,130,246,0.4)] transition-all border border-blue-400">Sync Data</button>
+                </div>
+                <button type="button" onclick="deleteCurrentBed()" class="w-full mt-4 text-rose-500 hover:text-rose-400 hover:bg-rose-900/20 border border-transparent hover:border-rose-900/50 rounded-lg text-xs font-bold py-2.5 transition-colors flex items-center justify-center gap-2">
+                    <i class="fas fa-trash-alt"></i> Remove Infrastructure
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const HOSPITAL_ID = "{{ hospital.id }}";
+        const socket = io();
+        let currentBedData = {}; 
+
+        socket.emit('join_hospital', { hospital_id: HOSPITAL_ID });
+
+        function getStatusTheme(status) {
+            if(status === 'Available') return { 
+                btn: 'bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 hover:bg-emerald-900/50 shadow-[0_0_10px_rgba(16,185,129,0.1)]', 
+                wrapper: 'status-available',
+                icon: ''
+            };
+            if(status === 'Occupied') return { 
+                btn: 'bg-rose-900/30 border border-rose-500/40 text-rose-400 hover:bg-rose-900/50 shadow-[0_0_10px_rgba(244,63,94,0.1)]', 
+                wrapper: 'status-occupied',
+                icon: '<i class="fas fa-user-injured text-rose-500 text-lg opacity-80 drop-shadow-[0_0_5px_rgba(244,63,94,0.4)]"></i>'
+            };
+            if(status === 'Cleaning') return { 
+                btn: 'bg-amber-900/30 border border-amber-500/40 text-amber-400 hover:bg-amber-900/50 shadow-[0_0_10px_rgba(251,191,36,0.1)]', 
+                wrapper: 'status-cleaning',
+                icon: '<i class="fas fa-broom text-amber-500 text-lg opacity-80 drop-shadow-[0_0_5px_rgba(251,191,36,0.4)]"></i>'
+            };
+            
+            return { 
+                btn: 'bg-purple-900/30 border border-purple-500/40 text-purple-400 hover:bg-purple-900/50 shadow-[0_0_10px_rgba(168,85,247,0.1)]', 
+                wrapper: 'status-hold',
+                icon: '<i class="fas fa-clipboard-check text-purple-500 text-lg opacity-80 drop-shadow-[0_0_5px_rgba(168,85,247,0.4)]"></i>'
+            };
+        }
+
+        function loadData() {
+            fetch(`/api/${HOSPITAL_ID}/beds`).then(r => r.json()).then(data => renderFloors(data));
+        }
+        loadData();
+
+        socket.on('system_refresh', (data) => {
+            if (data.hospital_id === HOSPITAL_ID) loadData();
+        });
+
+        function renderFloors(data) {
+            const container = document.getElementById('floors-container');
+            const floorSelect = document.getElementById('bFloorSelect');
+            
+            let globalStats = { total: 0, available: 0, occupied: 0, cleaning: 0, hold: 0 };
+            
+            container.innerHTML = '';
+            floorSelect.innerHTML = '<option value="">Select Assigned Floor...</option>';
+            
+            if (data.length === 0) {
+                container.innerHTML = `
+                    <div class="glass-panel neon-blue-box p-16 rounded-[24px] text-center flex flex-col items-center justify-center min-h-[500px]">
+                        <div class="w-20 h-20 bg-neutral-900 border border-blue-500/50 rounded-full flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+                            <i class="fas fa-lock text-4xl text-blue-500"></i>
+                        </div>
+                        <h2 class="text-2xl font-extrabold text-white mb-3">No Floor Access</h2>
+                        <p class="text-blue-200/60 font-medium max-w-md mx-auto leading-relaxed">You are not currently assigned to manage any active floors. Please contact the hospital administrator to provision access to your account.</p>
+                    </div>`;
+                updateGlobalStats(globalStats);
+                return;
+            }
+
+            data.forEach(floor => {
+                floorSelect.innerHTML += `<option value="${floor.floor}|${floor.name}">${floor.name} (Floor ${floor.floor})</option>`;
+
+                let floorStats = { total: 0, available: 0, occupied: 0, cleaning: 0, hold: 0 };
+
+                floor.beds.forEach(bed => {
+                    globalStats.total++;
+                    floorStats.total++;
+                    if (bed.status === 'Available') { globalStats.available++; floorStats.available++; }
+                    else if (bed.status === 'Occupied') { globalStats.occupied++; floorStats.occupied++; }
+                    else if (bed.status === 'Cleaning') { globalStats.cleaning++; floorStats.cleaning++; }
+                    else { globalStats.hold++; floorStats.hold++; }
+                });
+
+                // Floor Summary with semantic borders based on availability/status
+                let html = `
+                <div class="mb-12">
+                    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-6 pl-1 pr-1">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-pink-600 shadow-[0_0_20px_rgba(236,72,153,0.5)] text-white flex items-center justify-center font-black text-sm border border-pink-400">F${floor.floor}</div>
+                            <h2 class="text-3xl font-black text-pink-400 tracking-tight drop-shadow-[0_0_8px_rgba(236,72,153,0.4)]">${floor.name}</h2>
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-3">
+                            <!-- Semantic borders applied -->
+                            <div class="px-4 py-2 rounded-xl flex items-center gap-2 bg-neutral-900 border border-neutral-700 shadow-md cursor-default">
+                                <span class="text-[10px] uppercase text-neutral-400 font-bold tracking-wider">Total</span>
+                                <span class="font-black text-white text-base">${floorStats.total}</span>
+                            </div>
+                            <div class="px-4 py-2 rounded-xl flex items-center gap-2 bg-gradient-to-r from-emerald-900/20 to-neutral-900 border border-emerald-500/50 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.2)] animate-glow cursor-default">
+                                <span class="text-[10px] uppercase font-black tracking-wider opacity-90">Avail</span>
+                                <span class="font-black text-base">${floorStats.available}</span>
+                            </div>
+                            <div class="px-4 py-2 rounded-xl flex items-center gap-2 bg-gradient-to-r from-rose-900/20 to-neutral-900 border border-rose-500/50 text-rose-400 shadow-[0_0_10px_rgba(244,63,94,0.2)] animate-glow cursor-default" style="animation-delay: 0.2s;">
+                                <span class="text-[10px] uppercase font-black tracking-wider opacity-90">Occ</span>
+                                <span class="font-black text-base">${floorStats.occupied}</span>
+                            </div>
+                            <div class="px-4 py-2 rounded-xl flex items-center gap-2 bg-gradient-to-r from-amber-900/20 to-neutral-900 border border-amber-500/50 text-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.2)] animate-glow cursor-default" style="animation-delay: 0.4s;">
+                                <span class="text-[10px] uppercase font-black tracking-wider opacity-90">Clean</span>
+                                <span class="font-black text-base">${floorStats.cleaning}</span>
+                            </div>
+                            <div class="px-4 py-2 rounded-xl flex items-center gap-2 bg-gradient-to-r from-purple-900/20 to-neutral-900 border border-purple-500/50 text-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.2)] animate-glow cursor-default" style="animation-delay: 0.6s;">
+                                <span class="text-[10px] uppercase font-black tracking-wider opacity-90">Hold</span>
+                                <span class="font-black text-base">${floorStats.hold}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ward-room neon-blue-box p-10 min-h-[400px] flex flex-wrap justify-center gap-12 items-center">
+                `;
+
+                floor.beds.forEach(bed => {
+                    const theme = getStatusTheme(bed.status);
+                    const safeBed = JSON.stringify(bed).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+                    
+                    html += `
+                        <div class="bed-wrapper flex flex-col items-center relative z-10 cursor-pointer ${theme.wrapper} group" onclick='openEditModal(${safeBed})'>
+                            
+                            ${bed.status === 'Occupied' ? `<div class="absolute -top-7 bg-rose-950 border border-rose-500/50 text-rose-400 text-[9px] font-black px-2.5 py-1 rounded-md z-20 shadow-[0_0_15px_rgba(244,63,94,0.3)] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity -translate-y-2 group-hover:-translate-y-0 duration-300 animate-glow"><i class="fas fa-heartbeat"></i> ACTIVE</div>` : ''}
+                            
+                            <div class="bed-graphic">
+                                <div class="bed-pillow"></div>
+                                <div class="bed-blanket">
+                                    ${theme.icon}
+                                </div>
+                            </div>
+                            <button class="${theme.btn} font-black text-[10px] uppercase tracking-wider px-4 py-2 rounded-lg mt-4 transition-all">
+                                ${bed.id}
+                            </button>
+                        </div>
+                    `;
+                });
+
+                html += `</div></div>`;
+                container.innerHTML += html;
+            });
+            
+            updateGlobalStats(globalStats);
+        }
+        
+        function updateGlobalStats(stats) {
+            document.getElementById('global-total').innerText = stats.total;
+            document.getElementById('global-available').innerText = stats.available;
+            document.getElementById('global-occupied').innerText = stats.occupied;
+            document.getElementById('global-cleaning').innerText = stats.cleaning;
+            document.getElementById('global-hold').innerText = stats.hold;
+        }
+
+        function openEditModal(bed) {
+            currentBedData = bed;
+            document.getElementById('editBedTitle').innerText = bed.id;
+            document.getElementById('editBedType').innerText = bed.type;
+            document.getElementById('editBedId').value = bed.id;
+            
+            const statusSelect = document.getElementById('editStatus');
+            Array.from(statusSelect.options).forEach(opt => {
+                if (opt.value === bed.status) opt.selected = true;
+            });
+
+            document.getElementById('editPatientName').value = bed.patient_name;
+            document.getElementById('editPatientAge').value = bed.patient_age;
+            document.getElementById('editDiagnosis').value = bed.diagnosis;
+            
+            toggleEditFields();
+            document.getElementById('editBedModal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editBedModal').classList.add('hidden');
+            currentBedData = {};
+        }
+
+        function toggleEditFields() {
+            const s = document.getElementById('editStatus').value;
+            const locked = (s === 'Available' || s === 'Cleaning');
+            const fields = ['editPatientName', 'editPatientAge', 'editDiagnosis'];
+            fields.forEach(id => {
+                const el = document.getElementById(id);
+                el.disabled = locked;
+                if(locked) el.value = '';
+            });
+        }
+
+        document.getElementById('editBedForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            socket.emit('update_bed_status', {
+                hospital_id: HOSPITAL_ID,
+                bed_id: document.getElementById('editBedId').value,
+                status: document.getElementById('editStatus').value,
+                patient_name: document.getElementById('editPatientName').value,
+                patient_age: document.getElementById('editPatientAge').value,
+                diagnosis: document.getElementById('editDiagnosis').value
+            });
+            closeEditModal();
+        });
+
+        document.getElementById('addBedForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const selectedVal = document.getElementById('bFloorSelect').value;
+            const [floorNum, floorName] = selectedVal.split('|');
+
+            const res = await fetch(`/api/${HOSPITAL_ID}/add_bed`, {
+                method: 'POST', headers:{'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    floor_num: floorNum,
+                    floor_name: floorName,
+                    bed_id: document.getElementById('bBedId').value,
+                    bed_type: document.getElementById('bType').value
+                })
+            });
+            const data = await res.json();
+            if(data.success) {
+                document.getElementById('addBedModal').classList.add('hidden');
+                document.getElementById('addBedForm').reset();
+                loadData();
+            } else alert("Error: Bed ID already exists.");
+        });
+
+        async function deleteCurrentBed() {
+            if(!confirm(`WARNING: Are you sure you want to permanently delete ${currentBedData.id}?`)) return;
+            
+            const res = await fetch(`/api/${HOSPITAL_ID}/delete_bed`, {
+                method: 'POST', headers:{'Content-Type': 'application/json'},
+                body: JSON.stringify({ bed_id: currentBedData.id })
+            });
+            const data = await res.json();
+            if(data.success) {
+                closeEditModal();
+                loadData();
+            } else alert("Failed to remove bed infrastructure.");
+        }
+    </script>
+</body>
+</html>

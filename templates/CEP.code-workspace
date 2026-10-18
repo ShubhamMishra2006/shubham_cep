@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "../../CEP"
+		},
+		{
+			"path": ".."
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "CEP1"
+	}
+}

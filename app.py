@@ -156,6 +156,7 @@ HOSPITALS_SEED = [
 ]
 
 def get_db_connection():
+    db_path = os.path.join("/tmp", "my_database.db")
     conn = sqlite3.connect(DB_FILE)
     conn.row_factory = sqlite3.Row
     return conn

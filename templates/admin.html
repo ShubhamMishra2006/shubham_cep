@@ -1,208 +1,485 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <title>{{ hospital.name }} - Administrative Portal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ hospital.name }} - Admin Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        darkBg: '#050b14',
+                        cardBg: '#0a1324',
+                        cardBorder: '#1a2642',
+                        neonBlue: '#00d2ff',
+                        neonCyan: '#00f0ff',
+                        neonPurple: '#b721ff',
+                        neonGreen: '#00ff88',
+                        neonOrange: '#ff8c00',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: 'Outfit', sans-serif; background-color: #f8fafc; color: #1e293b; }
-        .glass-card { background: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
-        /* Custom scrollbar for chip area if it gets too large */
-        .chip-scroll::-webkit-scrollbar { height: 4px; }
-        .chip-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
-        .chip-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        body { background-color: #050b14; color: #e2e8f0; transition: background-color 0.3s, color 0.3s; }
+        
+        /* Light Mode Overrides */
+        html:not(.dark) body { background-color: #f1f5f9; color: #0f172a; }
+        html:not(.dark) .bg-darkBg { background-color: #f8fafc; }
+        html:not(.dark) .border-cardBorder { border-color: #e2e8f0; }
+        html:not(.dark) .neon-border { background: #ffffff; border-color: #cbd5e1; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); }
+        html:not(.dark) .cyber-input { background: #f8fafc; border-color: #cbd5e1; color: #0f172a; }
+        html:not(.dark) .text-white { color: #0f172a !important; }
+        html:not(.dark) .text-gray-400 { color: #64748b !important; }
+        html:not(.dark) .bg-cardBorder { background-color: #e2e8f0; }
+        html:not(.dark) .cyber-btn { background: #ffffff; border-color: #cbd5e1; color: #0f172a; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #1a2642; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #2a3a5c; }
+        html:not(.dark) ::-webkit-scrollbar-thumb { background: #cbd5e1; }
+
+        /* Glowing Cards & Borders */
+        .neon-border { position: relative; border: 1px solid #1a2642; border-radius: 12px; background: #0a1324; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); transition: all 0.3s ease; }
+        .neon-border::before {
+            content: ""; position: absolute; inset: -1px; border-radius: 12px; padding: 1px; z-index: -1;
+            background: linear-gradient(180deg, rgba(0,210,255,0.2) 0%, rgba(26,38,66,0) 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
+        }
+        
+        .stat-card:hover { box-shadow: 0 0 20px rgba(0, 210, 255, 0.15); border-color: rgba(0, 210, 255, 0.3); }
+        
+        /* Glowing Icons */
+        .glow-icon-blue { text-shadow: 0 0 15px rgba(0, 210, 255, 0.8); color: #00d2ff; }
+        .glow-icon-cyan { text-shadow: 0 0 15px rgba(0, 240, 255, 0.8); color: #00f0ff; }
+        .glow-icon-purple { text-shadow: 0 0 15px rgba(183, 33, 255, 0.8); color: #b721ff; }
+        .glow-icon-orange { text-shadow: 0 0 15px rgba(255, 140, 0, 0.8); color: #ff8c00; }
+
+        /* Form Inputs */
+        .cyber-input { background: #050b14; border: 1px solid #1a2642; color: #fff; transition: all 0.3s ease; }
+        .cyber-input:focus { outline: none; border-color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+
+        /* Buttons */
+        .cyber-btn { background: linear-gradient(180deg, #1a2642 0%, #0a1324 100%); border: 1px solid #2a3a5c; transition: all 0.2s; }
+        .cyber-btn:hover { background: linear-gradient(180deg, #2a3a5c 0%, #1a2642 100%); border-color: #00d2ff; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
+        .cyber-btn-primary { background: linear-gradient(90deg, #0052d4 0%, #4364f7 50%, #6fb1fc 100%); border: none; box-shadow: 0 0 15px rgba(67, 100, 247, 0.4); color: white !important;}
+        .cyber-btn-primary:hover { box-shadow: 0 0 25px rgba(67, 100, 247, 0.7); }
+        .cyber-btn-danger { background: linear-gradient(90deg, #cb2d3e 0%, #ef473a 100%); border: none; color: white !important;}
+        .cyber-btn-success { background: linear-gradient(90deg, #11998e 0%, #38ef7d 100%); border: none; color: #000 !important; }
     </style>
 </head>
-<body class="min-h-screen p-6 md:p-10 max-w-6xl mx-auto">
+<body class="flex h-screen overflow-hidden text-sm">
 
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-8">
-        <div>
-            <h1 class="text-3xl font-black text-gray-900">{{ hospital.name }}</h1>
-            <p class="text-sm font-bold text-blue-600 uppercase tracking-widest mt-1"><i class="fas fa-shield-alt mr-2"></i>Management & Admin Portal</p>
+    <!-- Sidebar -->
+    <aside class="w-64 bg-darkBg border-r border-cardBorder flex flex-col hidden md:flex shrink-0">
+        <div class="p-5 flex items-center gap-3 border-b border-cardBorder">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-400 flex items-center justify-center shadow-[0_0_15px_rgba(0,210,255,0.4)]">
+                <i class="fas fa-hospital text-white text-lg" style="color: white !important;"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-white tracking-wide truncate max-w-[150px]" title="{{ hospital.name }}">{{ hospital.name }}</h1>
+                <p class="text-[10px] text-gray-400 uppercase tracking-widest">Admin Portal</p>
+            </div>
         </div>
-        <a href="/hospital/{{ hospital.id }}/admin/logout" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors shadow-sm">
-            <i class="fas fa-power-off mr-1.5"></i> Secure Logout
-        </a>
-    </div>
 
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="mb-6 p-4 rounded-xl text-sm font-bold {% if category == 'error' %}bg-red-50 text-red-700 border border-red-200{% else %}bg-green-50 text-green-700 border border-green-200{% endif %} flex items-center">
-                    <i class="fas {% if category == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %} mr-2"></i>
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+        <div class="p-4 flex-1 overflow-y-auto space-y-6">
+            <div>
+                <p class="text-[10px] text-gray-500 font-bold mb-3 uppercase tracking-wider">Main</p>
+                <a href="#" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-gradient-to-r from-[rgba(0,210,255,0.15)] to-transparent border border-[rgba(0,210,255,0.3)] text-white shadow-[0_0_10px_rgba(0,210,255,0.1)]">
+                    <i class="fas fa-home text-neonBlue"></i> Dashboard
+                </a>
+            </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        <!-- Sidebar: Bed Summary -->
-        <div class="lg:col-span-1">
-            <div class="glass-card rounded-2xl p-6 lg:sticky lg:top-8">
-                <h3 class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4 border-b pb-2">Live Infrastructure Summary</h3>
-                
-                <div class="space-y-4">
-                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 flex justify-between items-center">
-                        <span class="text-sm font-semibold text-gray-600">Total Capacity</span>
-                        <span class="text-2xl font-black text-gray-800">{{ stats.total if stats else 0 }}</span>
-                    </div>
-                    <div class="bg-green-50 p-4 rounded-xl border border-green-100 flex justify-between items-center">
-                        <span class="text-sm font-semibold text-green-700">Available Beds</span>
-                        <span class="text-2xl font-black text-green-600">{{ stats.avail if stats else 0 }}</span>
-                    </div>
-                    <div class="bg-red-50 p-4 rounded-xl border border-red-100 flex justify-between items-center">
-                        <span class="text-sm font-semibold text-red-700">Occupied Beds</span>
-                        <span class="text-2xl font-black text-red-600">{{ stats.occ if stats else 0 }}</span>
-                    </div>
-                </div>
-                
-                <a href="/hospital/{{ hospital.id }}/counter" target="_blank" class="block w-full text-center mt-6 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-sm font-bold transition-colors shadow-sm">
-                    Open Detailed Telemetry
+            <div>
+                <p class="text-[10px] text-gray-500 font-bold mb-3 uppercase tracking-wider">Bed Management</p>
+                <a href="/hospital/{{ hospital.id }}/counter" target="_blank" class="flex items-center gap-3 px-4 py-2 text-gray-400 hover:text-neonBlue transition-colors">
+                    <i class="fas fa-bed"></i> Detailed Telemetry
+                </a>
+            </div>
+
+            <div>
+                <p class="text-[10px] text-gray-500 font-bold mb-3 uppercase tracking-wider">Other</p>
+                <a href="/hospital/{{ hospital.id }}/admin/logout" class="flex items-center gap-3 px-4 py-2 text-red-400 hover:text-red-500 transition-colors">
+                    <i class="fas fa-sign-out-alt"></i> Secure Logout
                 </a>
             </div>
         </div>
-
-        <!-- Main Area -->
-        <div class="lg:col-span-2 space-y-8">
-            
-            <!-- Pending Staff Approvals -->
-            <div class="glass-card rounded-2xl p-6">
-                <h3 class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4 border-b pb-2">Pending Staff Verifications</h3>
-                
-                {% if pending_staff %}
-                    <div class="space-y-4">
-                        {% for staff in pending_staff %}
-                        <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:border-blue-300">
-                            <div>
-                                <h4 class="text-lg font-bold text-gray-900">{{ staff.name }}</h4>
-                                <div class="flex items-center space-x-3 text-xs text-gray-500 mt-1">
-                                    <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold border border-blue-200">ID: {{ staff.staff_id }}</span>
-                                    <span><i class="fas fa-user text-gray-400 mr-1"></i>{{ staff.username }}</span>
-                                    <span><i class="fas fa-envelope text-gray-400 mr-1"></i>{{ staff.email }}</span>
-                                </div>
-                            </div>
-                            <div class="flex items-center space-x-2 shrink-0">
-                                <form method="POST" action="/hospital/{{ hospital.id }}/admin/staff/{{ staff.username }}/approve" class="inline">
-                                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center transition-colors shadow-sm">
-                                        <i class="fas fa-check mr-1.5"></i> Verify & Approve
-                                    </button>
-                                </form>
-                                <form method="POST" action="/hospital/{{ hospital.id }}/admin/staff/{{ staff.username }}/reject" class="inline" onsubmit="return confirm('Reject and permanently delete this request?');">
-                                    <button type="submit" class="bg-white border border-red-200 hover:bg-red-50 text-red-600 px-3 py-2 rounded-lg text-xs font-bold flex items-center transition-colors">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="text-center py-6">
-                        <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <i class="fas fa-check-double text-xl text-gray-400"></i>
-                        </div>
-                        <h4 class="text-gray-800 font-bold">No Pending Requests</h4>
-                    </div>
-                {% endif %}
-            </div>
-
-            <!-- Active Staff & Floor Assignments -->
-            <div class="glass-card rounded-2xl p-6 border-l-4 border-l-purple-500">
-                <div class="flex justify-between items-center mb-4 border-b pb-2">
-                    <h3 class="text-xs font-bold uppercase tracking-widest text-gray-400">Active Staff Permissions</h3>
-                    <span class="text-[10px] bg-purple-100 text-purple-700 px-2 py-1 rounded font-bold">ACCESS CONTROL</span>
+        
+        <div class="p-4 border-t border-cardBorder">
+            <div class="neon-border p-4 flex items-center gap-3 cursor-pointer hover:bg-black/10 dark:hover:bg-[#11192b] transition-colors">
+                <i class="fas fa-robot text-neonBlue text-xl"></i>
+                <div>
+                    <p class="text-xs font-bold text-white">System Status</p>
+                    <p class="text-[10px] text-gray-400">All modules active</p>
                 </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-w-0 bg-darkBg">
+        
+        <!-- Topbar -->
+        <header class="h-16 border-b border-cardBorder flex items-center justify-between px-6 shrink-0 z-10 bg-darkBg/80 backdrop-blur-sm">
+            <div class="flex items-center gap-4 flex-1">
+                <button class="md:hidden text-gray-400 hover:text-neonBlue"><i class="fas fa-bars"></i></button>
+                <div class="relative w-full max-w-md hidden sm:block">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                    <input type="text" placeholder="Search anything..." class="w-full bg-[#0a1324] dark:bg-[#0a1324] border border-cardBorder rounded-lg pl-10 pr-4 py-2 text-sm text-gray-800 dark:text-gray-300 focus:outline-none focus:border-neonBlue focus:shadow-[0_0_10px_rgba(0,210,255,0.1)] transition-all" style="background-color: transparent;">
+                </div>
+            </div>
+            <div class="flex items-center gap-5">
                 
-                {% if active_staff %}
-                    <div class="space-y-6">
-                        {% for staff in active_staff %}
-                        <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-5 flex flex-col transition-all hover:shadow-md">
-                            
-                            <!-- Staff Header -->
-                            <div class="flex justify-between items-start mb-4">
-                                <div>
-                                    <h4 class="text-lg font-bold text-gray-900">{{ staff.name }}</h4>
-                                    <div class="flex items-center space-x-3 text-xs text-gray-500 mt-1">
-                                        <span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded font-bold border border-gray-200">ID: {{ staff.staff_id }}</span>
-                                        <span>@{{ staff.username }}</span>
+                <!-- Theme Toggle Button -->
+                <button id="theme-toggle" class="text-gray-400 hover:text-neonBlue transition-colors" title="Toggle Theme">
+                    <i id="theme-toggle-icon" class="fas fa-sun text-lg"></i>
+                </button>
+
+                <button class="relative text-gray-400 hover:text-neonBlue">
+                    <i class="fas fa-bell text-lg"></i>
+                    <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-darkBg" style="color: white !important;">!</span>
+                </button>
+                <div class="flex items-center gap-3 border-l border-cardBorder pl-5">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-bold text-white leading-tight">Admin</p>
+                        <p class="text-[10px] text-gray-400">Super Administrator</p>
+                    </div>
+                    <div class="w-9 h-9 rounded-full bg-cardBorder flex items-center justify-center border border-gray-400 dark:border-gray-600">
+                        <i class="fas fa-user-shield text-gray-500 dark:text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Scrollable Dashboard Content -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+            
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="px-4 py-3 rounded-lg border text-sm font-semibold flex items-center gap-3 backdrop-blur-sm shadow-lg
+                            {% if category == 'error' %} bg-[rgba(255,50,50,0.1)] text-red-500 dark:text-red-400 border-red-500/30
+                            {% else %} bg-[rgba(0,255,136,0.1)] text-emerald-600 dark:text-emerald-400 border-emerald-500/30 {% endif %}">
+                            <i class="fas {% if category == 'error' %}fa-exclamation-triangle{% else %}fa-check-circle{% endif %} text-lg"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Welcome Header -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-white mb-1">Welcome back, Admin! 👋</h2>
+                    <p class="text-gray-400 text-xs">Here's what's happening in your hospital infrastructure today.</p>
+                </div>
+                <div class="neon-border px-4 py-2 flex items-center gap-2 text-gray-500 dark:text-gray-300 text-xs cursor-pointer hover:bg-cardBorder transition-colors">
+                    <i class="far fa-calendar-alt"></i> <span>Live Infrastructure</span>
+                </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Total Beds -->
+                <div class="neon-border stat-card p-5 flex justify-between items-center group transition-all">
+                    <div>
+                        <p class="text-gray-400 text-xs font-semibold mb-1">Total Capacity</p>
+                        <h3 id="stat_total" class="text-3xl font-bold text-white">{{ stats.total if stats else 0 }}</h3>
+                        <p class="text-[10px] text-gray-500 mt-2">All Departments</p>
+                    </div>
+                    <div class="w-14 h-14 bg-blue-50 dark:bg-[#0d1b32] rounded-xl flex items-center justify-center border border-[rgba(0,210,255,0.2)] shadow-[inset_0_0_15px_rgba(0,210,255,0.1)] group-hover:border-[rgba(0,210,255,0.5)] transition-all">
+                        <i class="fas fa-bed text-2xl glow-icon-blue"></i>
+                    </div>
+                </div>
+                <!-- Available Beds -->
+                <div class="neon-border stat-card p-5 flex justify-between items-center group transition-all">
+                    <div>
+                        <p class="text-gray-400 text-xs font-semibold mb-1">Available Beds</p>
+                        <h3 id="stat_avail" class="text-3xl font-bold text-white">{{ stats.avail if stats else 0 }}</h3>
+                        <p class="text-[10px] text-emerald-500 dark:text-emerald-400 mt-2">Ready for Admission</p>
+                    </div>
+                    <div class="w-14 h-14 bg-green-50 dark:bg-[#0d221c] rounded-xl flex items-center justify-center border border-[rgba(0,255,136,0.2)] shadow-[inset_0_0_15px_rgba(0,255,136,0.1)] group-hover:border-[rgba(0,255,136,0.5)] transition-all">
+                        <i class="fas fa-procedures text-2xl text-neonGreen glow-icon-cyan" style="color: #00ff88; text-shadow: 0 0 15px rgba(0, 255, 136, 0.8);"></i>
+                    </div>
+                </div>
+                <!-- Occupied Beds -->
+                <div class="neon-border stat-card p-5 flex justify-between items-center group transition-all">
+                    <div>
+                        <p class="text-gray-400 text-xs font-semibold mb-1">Occupied Beds</p>
+                        <h3 id="stat_occ" class="text-3xl font-bold text-white">{{ stats.occ if stats else 0 }}</h3>
+                        <p class="text-[10px] text-rose-500 dark:text-rose-400 mt-2">Currently In Use</p>
+                    </div>
+                    <div class="w-14 h-14 bg-purple-50 dark:bg-[#2a0e28] rounded-xl flex items-center justify-center border border-[rgba(183,33,255,0.2)] shadow-[inset_0_0_15px_rgba(183,33,255,0.1)] group-hover:border-[rgba(183,33,255,0.5)] transition-all">
+                        <i class="fas fa-user-injured text-2xl glow-icon-purple"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle Section: Infrastructure Management Form (Quick Actions UI) -->
+            <div class="neon-border p-6 relative overflow-hidden">
+                <!-- Background visual effect -->
+                <div class="absolute right-0 top-0 w-1/2 h-full opacity-10 pointer-events-none" style="background: radial-gradient(circle at 100% 50%, #00d2ff, transparent 70%);"></div>
+                
+                <div class="flex justify-between items-center mb-6 border-b border-cardBorder pb-3 relative z-10">
+                    <h3 class="font-bold text-white text-base">Infrastructure Controls</h3>
+                    <div class="flex gap-2">
+                        <button id="tab_add" onclick="setAction('add')" class="px-4 py-1.5 rounded text-xs font-bold transition-all bg-[rgba(0,210,255,0.1)] border border-neonBlue text-neonBlue shadow-[0_0_10px_rgba(0,210,255,0.2)]">Add</button>
+                        <button id="tab_edit" onclick="setAction('edit')" class="px-4 py-1.5 rounded text-xs font-bold transition-all bg-cardBorder text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white border border-transparent hover:border-gray-500">Edit</button>
+                        <button id="tab_delete" onclick="setAction('delete')" class="px-4 py-1.5 rounded text-xs font-bold transition-all bg-cardBorder text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white border border-transparent hover:border-gray-500">Delete</button>
+                    </div>
+                </div>
+
+                <form id="manage_form" method="POST" action="/hospital/{{ hospital.id }}/admin/manage_floor" class="relative z-10" onsubmit="return confirmSubmit()">
+                    <input type="hidden" name="action" id="action_input" value="add">
+                    
+                    <!-- 1. ADD FIELDS -->
+                    <div id="add_fields" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                        <div>
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1.5">Floor Num</label>
+                            <input type="text" name="add_floor_num" class="req-field w-full px-3 py-2 rounded cyber-input text-sm" placeholder="e.g. 3" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1.5">Floor Name</label>
+                            <input type="text" name="add_floor_name" class="req-field w-full px-3 py-2 rounded cyber-input text-sm" placeholder="e.g. ICU" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1.5">No. of Beds</label>
+                            <input type="number" name="add_bed_count" min="1" class="req-field w-full px-3 py-2 rounded cyber-input text-sm" placeholder="10" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1.5">Bed Type</label>
+                            <select name="add_bed_type" class="w-full px-3 py-2 rounded cyber-input text-sm appearance-none">
+                                <option value="General Bed">General</option>
+                                <option value="ICU Bed">ICU</option>
+                                <option value="Maternity Bed">Maternity</option>
+                                <option value="Pediatrics Bed">Pediatrics</option>
+                                <option value="Oxygen Bed">Oxygen</option>
+                                <option value="Ventilator">Ventilator</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 2. EDIT FIELDS -->
+                    <div id="edit_fields" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end hidden">
+                        <div>
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1.5">Select Floor</label>
+                            <select id="edit_floor_select" name="edit_old_floor_num" onchange="populateEditForm()" class="req-field w-full px-3 py-2 rounded cyber-input text-sm appearance-none">
+                                <option value="" disabled selected>-- Select --</option>
+                                {% for floor in all_floors %}
+                                <option value="{{ floor.floor }}" data-floor="{{ floor.floor }}" data-name="{{ floor.name }}">Flr {{ floor.floor }} ({{ floor.name }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1.5">New Num</label>
+                            <input type="text" id="edit_floor_num" name="edit_new_floor_num" class="req-field w-full px-3 py-2 rounded cyber-input text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1.5">New Name</label>
+                            <input type="text" id="edit_floor_name" name="edit_new_floor_name" class="req-field w-full px-3 py-2 rounded cyber-input text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1.5">Update Type</label>
+                            <select name="edit_new_bed_type" class="w-full px-3 py-2 rounded cyber-input text-sm appearance-none">
+                                <option value="" selected>-- Keep Existing --</option>
+                                <option value="General Bed">General Bed</option>
+                                <option value="ICU Bed">ICU Bed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 3. DELETE FIELDS -->
+                    <div id="delete_fields" class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end hidden">
+                        <div>
+                            <label class="block text-xs text-red-500 dark:text-red-400 mb-1.5">Select Floor to Destroy</label>
+                            <select name="delete_floor_num" class="req-field w-full px-3 py-2 rounded border border-red-500/50 bg-red-50 dark:bg-[#1a0f14] text-red-900 dark:text-white focus:outline-none focus:border-red-500 appearance-none">
+                                <option value="" disabled selected>-- Select --</option>
+                                {% for floor in all_floors %}
+                                <option value="{{ floor.floor }}">Floor {{ floor.floor }} ({{ floor.name }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="text-xs text-red-600 dark:text-red-400 bg-red-500/10 p-2.5 rounded border border-red-500/30 flex items-center">
+                            <i class="fas fa-exclamation-triangle mr-2"></i> Warning: Permanent deletion of floor & beds.
+                        </div>
+                    </div>
+
+                    <div class="mt-5 flex justify-end">
+                        <button id="manage_submit_btn" type="submit" class="cyber-btn-primary text-white px-6 py-2 rounded text-sm font-bold transition-all shadow-lg flex items-center">
+                            <i class="fas fa-bolt mr-2"></i> Execute Action
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Bottom Section: Staff Matrix Grid -->
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                
+                <!-- Staff Approval Requests (Pending) -->
+                <div class="neon-border p-0 flex flex-col h-full">
+                    <div class="p-5 flex justify-between items-center border-b border-cardBorder">
+                        <h3 class="font-bold text-white">Staff Approval Requests</h3>
+                        <span class="text-xs text-blue-600 dark:text-neonBlue bg-[rgba(0,210,255,0.1)] px-2 py-1 rounded border border-[rgba(0,210,255,0.2)]">Action Needed</span>
+                    </div>
+                    <div class="flex-1 overflow-x-auto">
+                        {% if pending_staff %}
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-cardBorder text-[10px] uppercase text-gray-500 tracking-wider">
+                                    <th class="p-4 font-semibold">Name & ID</th>
+                                    <th class="p-4 font-semibold">Username</th>
+                                    <th class="p-4 font-semibold text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-cardBorder/50">
+                                {% for staff in pending_staff %}
+                                <tr class="hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)] transition-colors">
+                                    <td class="p-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded bg-cardBorder flex items-center justify-center text-xs text-white"><i class="fas fa-user"></i></div>
+                                            <div>
+                                                <p class="text-sm text-white font-medium">{{ staff.name }}</p>
+                                                <p class="text-[10px] text-gray-500">{{ staff.staff_id }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-4 text-xs text-gray-500 dark:text-gray-400">@{{ staff.username }}</td>
+                                    <td class="p-4 text-right">
+                                        <div class="flex justify-end gap-2">
+                                            <form method="POST" action="/hospital/{{ hospital.id }}/admin/staff/{{ staff.username }}/approve" class="inline">
+                                                <button type="submit" class="w-7 h-7 rounded bg-[rgba(0,255,136,0.1)] border border-[rgba(0,255,136,0.3)] text-emerald-600 dark:text-neonGreen hover:bg-emerald-500 dark:hover:bg-[#00ff88] hover:text-white dark:hover:text-black transition-all flex items-center justify-center" title="Approve">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="/hospital/{{ hospital.id }}/admin/staff/{{ staff.username }}/reject" class="inline" onsubmit="return confirm('Reject request?');">
+                                                <button type="submit" class="w-7 h-7 rounded bg-[rgba(255,50,50,0.1)] border border-[rgba(255,50,50,0.3)] text-red-600 dark:text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center" title="Reject">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="p-10 flex flex-col items-center justify-center text-gray-500">
+                            <i class="fas fa-check-circle text-3xl mb-3 text-cardBorder border rounded-full p-4 border-cardBorder"></i>
+                            <p class="text-sm font-medium">No Pending Requests</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Active Staff Matrix (Floor Assignments) -->
+                <div class="neon-border p-0 flex flex-col h-full">
+                    <div class="p-5 flex justify-between items-center border-b border-cardBorder">
+                        <h3 class="font-bold text-white">Active Personnel & Floor Access</h3>
+                        <span class="text-[10px] text-gray-500 dark:text-gray-400 cursor-pointer hover:text-black dark:hover:text-white transition-colors">View All</span>
+                    </div>
+                    <div class="flex-1 overflow-y-auto max-h-[400px] p-4 space-y-4">
+                        {% if active_staff %}
+                            {% for staff in active_staff %}
+                            <div class="bg-gray-50 dark:bg-[rgba(10,19,36,0.5)] border border-cardBorder rounded-lg p-4 hover:border-blue-400 dark:hover:border-[rgba(0,210,255,0.3)] transition-all group">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-9 h-9 rounded bg-gray-200 dark:bg-[#1a2642] flex items-center justify-center border border-gray-300 dark:border-gray-700">
+                                            <i class="fas fa-user-md text-gray-500 dark:text-gray-300"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-white leading-tight">{{ staff.name }}</p>
+                                            <p class="text-[10px] text-blue-600 dark:text-neonBlue">ID: {{ staff.staff_id }} | @{{ staff.username }}</p>
+                                        </div>
                                     </div>
+                                    <form method="POST" action="/hospital/{{ hospital.id }}/admin/staff/{{ staff.username }}/revoke" onsubmit="return confirm('Suspend user?');">
+                                        <button type="submit" class="text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors" title="Suspend Access"><i class="fas fa-user-slash"></i></button>
+                                    </form>
                                 </div>
-                                <!-- Revoke Button -->
-                                <form method="POST" action="/hospital/{{ hospital.id }}/admin/staff/{{ staff.username }}/revoke" onsubmit="return confirm('Suspend system access for this user? They will be moved to the Revoked list.');">
-                                    <button type="submit" title="Suspend User" class="text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition-colors">
-                                        <i class="fas fa-user-slash"></i>
+                                
+                                <form id="form_{{ staff.username }}" method="POST" action="/hospital/{{ hospital.id }}/admin/staff/{{ staff.username }}/assign_floors" class="space-y-3" onsubmit="submitAssignFloors(event, '{{ staff.username }}')">
+                                    
+                                    <div class="mb-3 p-2 rounded bg-darkBg border border-cardBorder flex flex-wrap items-center gap-2">
+                                        <span class="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">Access:</span>
+                                        <select name="access_duration" class="cyber-input text-xs rounded px-2 py-1 appearance-none bg-gray-100 dark:bg-[#0a1324] cursor-pointer" onchange="toggleCustomTime(this, '{{ staff.username }}')">
+                                            <option value="permanent" selected>Permanent Time Access</option>
+                                            <option value="8h">Limit: 8 Hours</option>
+                                            <option value="12h">Limit: 12 Hours</option>
+                                            <option value="custom">Custom (HH:MM:SS)</option>
+                                            <option value="remove" class="text-red-500 dark:text-red-400 font-bold">Remove All Access</option>
+                                        </select>
+                                        
+                                        <div id="custom_time_{{ staff.username }}" class="hidden items-center gap-1">
+                                            <input type="number" name="custom_hours" placeholder="HH" class="cyber-input text-xs rounded px-1 py-1 w-10 text-center" min="0">
+                                            <span class="text-gray-500 font-bold">:</span>
+                                            <input type="number" name="custom_minutes" placeholder="MM" class="cyber-input text-xs rounded px-1 py-1 w-10 text-center" min="0" max="59">
+                                            <span class="text-gray-500 font-bold">:</span>
+                                            <input type="number" name="custom_seconds" placeholder="SS" class="cyber-input text-xs rounded px-1 py-1 w-10 text-center" min="0" max="59">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex flex-wrap gap-2 chip-scroll max-h-24 overflow-y-auto">
+                                        {% for floor in all_floors %}
+                                        <label class="cursor-pointer">
+                                            <input type="checkbox" name="assigned_floors" value="{{ floor.floor }}" class="hidden peer" {% if floor.floor in staff.assigned_floors %}checked{% endif %}>
+                                            <div class="px-2.5 py-1 rounded text-[10px] font-bold border transition-all 
+                                                border-cardBorder text-gray-500 dark:text-gray-400 bg-darkBg 
+                                                peer-checked:border-[rgba(0,210,255,0.5)] peer-checked:text-white peer-checked:bg-blue-50 dark:peer-checked:bg-[rgba(0,210,255,0.1)] peer-checked:shadow-[0_0_10px_rgba(0,210,255,0.15)]
+                                                peer-disabled:opacity-50 peer-disabled:cursor-not-allowed
+                                                hover:border-gray-400 dark:hover:border-gray-500">
+                                                {{ floor.name }} (Lvl {{ floor.floor }})
+                                                {% if floor.floor in staff.assigned_floors and staff.assigned_floors[floor.floor] != -1 %}
+                                                    <i class="far fa-clock text-orange-500 dark:text-neonOrange ml-1" title="Time Limited Access"></i>
+                                                {% endif %}
+                                            </div>
+                                        </label>
+                                        {% endfor %}
+                                    </div>
+                                    <button type="submit" class="w-full text-center py-1.5 rounded bg-cardBorder hover:bg-gray-300 dark:hover:bg-[#2a3a5c] text-xs text-gray-700 dark:text-gray-300 transition-colors border border-transparent hover:border-gray-400 dark:hover:border-gray-600">
+                                        Save Permissions
                                     </button>
                                 </form>
                             </div>
-                            
-                            <!-- Floor Assignment Form with Beautiful Chip Selectors -->
-                            <form method="POST" action="/hospital/{{ hospital.id }}/admin/staff/{{ staff.username }}/assign_floors" class="bg-gray-50 p-4 rounded-lg border border-gray-100">
-                                <label class="text-xs font-bold text-gray-500 mb-2 block uppercase tracking-wider">Assigned Floors</label>
-                                
-                                <div class="flex flex-wrap gap-2 mb-4 chip-scroll">
-                                    {% for floor in all_floors %}
-                                    <label class="cursor-pointer select-none">
-                                        <!-- Hidden Checkbox -->
-                                        <input type="checkbox" name="assigned_floors" value="{{ floor.floor }}" class="hidden peer" {% if floor.floor in staff.assigned_floors %}checked{% endif %}>
-                                        <!-- Styled Chip (Changes color when checkbox is checked via the 'peer' class) -->
-                                        <div class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-white text-gray-600 border border-gray-300 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-600 hover:bg-gray-100 peer-checked:hover:bg-purple-700 transition-all shadow-sm flex items-center">
-                                            <i class="fas fa-layer-group mr-1.5 opacity-70"></i> {{ floor.name }} (Floor {{ floor.floor }})
-                                        </div>
-                                    </label>
-                                    {% endfor %}
-                                    {% if not all_floors %}
-                                        <span class="text-xs text-red-500 italic">No floors exist in the system yet.</span>
-                                    {% endif %}
-                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-center text-sm text-gray-500 py-10">No active staff matrix data.</p>
+                        {% endif %}
+                    </div>
+                </div>
 
-                                <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm">
-                                    Save Floor Permissions
-                                </button>
-                            </form>
-                        </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="text-center py-6">
-                        <p class="text-sm text-gray-500">No active staff members found.</p>
-                    </div>
-                {% endif %}
             </div>
 
-            <!-- NEW: Revoked / Suspended Staff -->
+            <!-- Revoked Staff Banner -->
             {% if revoked_staff %}
-            <div class="glass-card rounded-2xl p-6 border-l-4 border-l-gray-400 bg-gray-50/50">
-                <h3 class="text-xs font-bold uppercase tracking-widest text-gray-500 mb-4 border-b border-gray-200 pb-2">Revoked & Suspended Staff</h3>
-                
-                <div class="space-y-4">
+            <div class="neon-border p-4 bg-red-50 dark:bg-[rgba(26,15,20,0.5)] border-red-200 dark:border-[rgba(255,50,50,0.2)]">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-ban text-red-500"></i>
+                        <h3 class="font-bold text-white text-sm">Suspended Personnel Registry</h3>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {% for staff in revoked_staff %}
-                    <div class="bg-white border border-gray-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 opacity-75 hover:opacity-100 transition-opacity">
+                    <div class="bg-darkBg border border-cardBorder rounded p-3 flex justify-between items-center opacity-80 hover:opacity-100 transition-opacity">
                         <div>
-                            <h4 class="text-base font-bold text-gray-700 strike-through">{{ staff.name }} <span class="text-red-500 text-xs ml-2 uppercase bg-red-100 px-2 py-0.5 rounded">Suspended</span></h4>
-                            <div class="flex items-center space-x-3 text-xs text-gray-500 mt-1">
-                                <span>ID: {{ staff.staff_id }}</span>
-                                <span>@{{ staff.username }}</span>
-                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 line-through">{{ staff.name }}</p>
+                            <p class="text-[10px] text-red-500 dark:text-red-400">@{{ staff.username }}</p>
                         </div>
-                        
-                        <div class="flex items-center space-x-2 shrink-0">
-                            <!-- Restore Button -->
-                            <form method="POST" action="/hospital/{{ hospital.id }}/admin/staff/{{ staff.username }}/restore" class="inline">
-                                <button type="submit" class="bg-gray-800 hover:bg-black text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center transition-colors shadow-sm">
-                                    <i class="fas fa-undo mr-1.5"></i> Restore Access
-                                </button>
+                        <div class="flex gap-2">
+                            <form method="POST" action="/hospital/{{ hospital.id }}/admin/staff/{{ staff.username }}/restore">
+                                <button type="submit" class="text-emerald-600 dark:text-emerald-500 hover:text-emerald-500 dark:hover:text-emerald-400 text-xs px-2 py-1 bg-[rgba(0,255,136,0.1)] rounded" title="Restore"><i class="fas fa-undo"></i></button>
                             </form>
-                            <!-- Permanent Delete Button -->
-                            <form method="POST" action="/hospital/{{ hospital.id }}/admin/staff/{{ staff.username }}/reject" class="inline" onsubmit="return confirm('PERMANENTLY DELETE this user from the database? This cannot be undone.');">
-                                <button type="submit" title="Delete Permanently" class="bg-white border border-red-200 hover:bg-red-50 text-red-600 px-3 py-2 rounded-lg text-xs font-bold transition-colors">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
+                            <form method="POST" action="/hospital/{{ hospital.id }}/admin/staff/{{ staff.username }}/reject" onsubmit="return confirm('PERMANENTLY DELETE?');">
+                                <button type="submit" class="text-red-600 dark:text-red-500 hover:text-red-500 dark:hover:text-red-400 text-xs px-2 py-1 bg-[rgba(255,50,50,0.1)] rounded" title="Purge"><i class="fas fa-trash"></i></button>
                             </form>
                         </div>
                     </div>
@@ -212,6 +489,178 @@
             {% endif %}
 
         </div>
-    </div>
+    </main>
+
+    <!-- Theme and General Scripts -->
+    <script>
+        // Theme Toggle Logic
+        const htmlEl = document.documentElement;
+        const themeBtn = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-toggle-icon');
+
+        if (localStorage.getItem('theme') === 'light') {
+            htmlEl.classList.remove('dark');
+            themeIcon.classList.replace('fa-sun', 'fa-moon');
+        }
+
+        themeBtn.addEventListener('click', () => {
+            htmlEl.classList.toggle('dark');
+            if (htmlEl.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+                themeIcon.classList.replace('fa-moon', 'fa-sun');
+            } else {
+                localStorage.setItem('theme', 'light');
+                themeIcon.classList.replace('fa-sun', 'fa-moon');
+            }
+        });
+
+        function setAction(actionType) {
+            document.getElementById('action_input').value = actionType;
+            
+            document.getElementById('add_fields').classList.add('hidden');
+            document.getElementById('edit_fields').classList.add('hidden');
+            document.getElementById('delete_fields').classList.add('hidden');
+            
+            document.querySelectorAll('#manage_form .req-field').forEach(el => el.removeAttribute('required'));
+            
+            document.getElementById(actionType + '_fields').classList.remove('hidden');
+            document.querySelectorAll('#' + actionType + '_fields .req-field').forEach(el => el.setAttribute('required', 'true'));
+            
+            const inactiveClass = "px-4 py-1.5 rounded text-xs font-bold transition-all bg-cardBorder text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white border border-transparent hover:border-gray-500";
+            ['add', 'edit', 'delete'].forEach(type => document.getElementById('tab_' + type).className = inactiveClass);
+
+            let activeBtn = document.getElementById('tab_' + actionType);
+            let submitBtn = document.getElementById('manage_submit_btn');
+
+            if (actionType === 'add') {
+                activeBtn.className = "px-4 py-1.5 rounded text-xs font-bold transition-all bg-[rgba(0,210,255,0.1)] border border-blue-500 dark:border-neonBlue text-blue-600 dark:text-neonBlue shadow-[0_0_10px_rgba(0,210,255,0.2)]";
+                submitBtn.className = "cyber-btn-primary text-white px-6 py-2 rounded text-sm font-bold transition-all shadow-lg flex items-center";
+                submitBtn.innerHTML = '<i class="fas fa-plus mr-2"></i> Add Infrastructure';
+            } else if (actionType === 'edit') {
+                activeBtn.className = "px-4 py-1.5 rounded text-xs font-bold transition-all bg-[rgba(0,255,136,0.1)] border border-emerald-500 dark:border-neonGreen text-emerald-600 dark:text-neonGreen shadow-[0_0_10px_rgba(0,255,136,0.2)]";
+                submitBtn.className = "cyber-btn-success text-black px-6 py-2 rounded text-sm font-bold transition-all shadow-lg flex items-center";
+                submitBtn.innerHTML = '<i class="fas fa-sync mr-2"></i> Update Floor';
+            } else if (actionType === 'delete') {
+                activeBtn.className = "px-4 py-1.5 rounded text-xs font-bold transition-all bg-[rgba(255,50,50,0.1)] border border-red-500 text-red-600 dark:text-red-500 shadow-[0_0_10px_rgba(255,50,50,0.2)]";
+                submitBtn.className = "cyber-btn-danger text-white px-6 py-2 rounded text-sm font-bold transition-all shadow-lg flex items-center";
+                submitBtn.innerHTML = '<i class="fas fa-trash mr-2"></i> Destroy Records';
+            }
+        }
+        
+        function populateEditForm() {
+            const select = document.getElementById('edit_floor_select');
+            const opt = select.options[select.selectedIndex];
+            if (!opt.value) {
+                document.getElementById('edit_floor_num').value = '';
+                document.getElementById('edit_floor_name').value = '';
+                return;
+            }
+            document.getElementById('edit_floor_num').value = opt.getAttribute('data-floor');
+            document.getElementById('edit_floor_name').value = opt.getAttribute('data-name');
+        }
+
+        function confirmSubmit() {
+            if(document.getElementById('action_input').value === 'delete') {
+                return confirm('CRITICAL WARNING: Are you sure you want to permanently delete this floor and ALL of its beds?');
+            }
+            return true;
+        }
+
+        function toggleCustomTime(selectElem, username) {
+            const customTimeDiv = document.getElementById('custom_time_' + username);
+            const checkboxes = document.querySelectorAll('#form_' + username + ' input[type="checkbox"]');
+            
+            if (selectElem.value === 'custom') {
+                customTimeDiv.classList.remove('hidden');
+                customTimeDiv.classList.add('flex');
+            } else {
+                customTimeDiv.classList.add('hidden');
+                customTimeDiv.classList.remove('flex');
+            }
+            
+            if (selectElem.value === 'remove') {
+                checkboxes.forEach(cb => { cb.checked = false; cb.disabled = true; });
+            } else {
+                checkboxes.forEach(cb => { cb.disabled = false; });
+            }
+        }
+
+        async function submitAssignFloors(event, username) {
+            event.preventDefault(); 
+            const form = event.target;
+            const formData = new FormData(form);
+            const btn = form.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            
+            try {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Saving...';
+                await fetch(form.action, { method: 'POST', body: formData, headers: { 'Accept': 'application/json' }});
+                
+                btn.innerHTML = '<i class="fas fa-check mr-2"></i> Saved';
+                btn.classList.add('bg-emerald-600', 'text-white');
+                btn.classList.remove('bg-cardBorder', 'text-gray-300', 'text-gray-700');
+                
+                fetchAndUpdateMatrix();
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('bg-emerald-600', 'text-white');
+                    btn.classList.add('bg-cardBorder');
+                }, 2000);
+            } catch (e) {
+                console.error("Save failed:", e);
+                btn.innerHTML = '<i class="fas fa-times mr-2"></i> Error';
+            }
+        }
+
+        async function fetchAndUpdateMatrix() {
+            try {
+                const response = await fetch(`/hospital/{{ hospital.id }}/admin/api/staff_matrix`);
+                if (!response.ok) return;
+                const staffMatrix = await response.json();
+                
+                for (const [username, activeFloors] of Object.entries(staffMatrix)) {
+                    const checkboxes = document.querySelectorAll(`#form_${username} input[name="assigned_floors"]`);
+                    checkboxes.forEach(cb => {
+                        const floorNum = cb.value;
+                        const labelDiv = cb.nextElementSibling;
+                        let clockIcon = labelDiv.querySelector('.fa-clock');
+                        if (activeFloors.hasOwnProperty(floorNum)) {
+                            cb.checked = true;
+                            if (activeFloors[floorNum] !== -1 && !clockIcon) labelDiv.innerHTML += ' <i class="far fa-clock text-orange-500 dark:text-neonOrange ml-1" title="Time Limited Access"></i>';
+                            else if (activeFloors[floorNum] === -1 && clockIcon) clockIcon.remove();
+                        } else {
+                            cb.checked = false;
+                            if (clockIcon) clockIcon.remove();
+                        }
+                    });
+                }
+            } catch (error) { console.error("Matrix auto-fetch failed:", error); }
+        }
+
+        async function fetchAndUpdateStats() {
+            try {
+                const response = await fetch(`/hospital/{{ hospital.id }}/admin/api/stats`);
+                if (!response.ok) return;
+                const data = await response.json();
+                document.getElementById('stat_total').innerText = data.total;
+                document.getElementById('stat_avail').innerText = data.avail;
+                document.getElementById('stat_occ').innerText = data.occ;
+            } catch (error) { console.error("Stats auto-fetch failed:", error); }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setInterval(() => { fetchAndUpdateMatrix(); fetchAndUpdateStats(); }, 5000);
+        });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        const socket = io();
+        socket.on('connect', () => { socket.emit('join_hospital', {hospital_id: '{{ hospital.id }}'}); });
+        socket.on('system_refresh', () => { fetchAndUpdateStats(); });
+        socket.on('bed_updated', () => { fetchAndUpdateStats(); });
+        socket.on('global_network_refresh', () => { fetchAndUpdateStats(); });
+    </script>
 </body>
 </html>

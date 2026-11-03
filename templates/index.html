@@ -458,7 +458,7 @@
             transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
         }
         .filter-content.open {
-            max-height: 320px;
+            max-height: 400px;
             padding-top: 8px;
             padding-bottom: 12px;
         }
@@ -571,7 +571,7 @@
                 </div>
                 <div class="relative flex-1">
                     <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
-                    <input type="text" id="hospitalSearch" placeholder="Search hospitals or specialties..." aria-label="Search hospitals by name or specialty" oninput="applyFilters()"
+                    <input type="text" id="hospitalSearch" placeholder="Search hospitals or specialties..." aria-label="Search hospitals by name or specialty" autocomplete="off" oninput="applyFilters()"
                         class="filter-input w-full text-xs sm:text-sm block pl-10 pr-9 py-2.5 transition-all">
                     <button type="button" id="clearSearchBtn" onclick="clearSearchInput()" aria-label="Clear search" class="hidden absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-cyan-300 text-xs">
                         <i class="fas fa-times-circle"></i>
@@ -653,7 +653,7 @@
             
             <!-- LEFT SIDEBAR: 3D GLASS CONTAINER FOR FILTERS -->
             <aside id="filter-sidebar-wrapper" class="hidden lg:block w-full lg:w-[270px] shrink-0 relative z-30">
-                <div class="lg:sticky lg:top-24 hud-panel p-4 space-y-3.5">
+                <div class="lg:sticky lg:top-24 hud-panel p-4 space-y-3.5 max-h-[calc(100vh-7rem)] overflow-y-auto custom-scrollbar">
                     
                     <!-- Sidebar Header -->
                     <div class="flex items-center justify-between px-1 pt-0.5 pb-1 border-b border-sky-400/15">
@@ -675,13 +675,16 @@
                         </button>
                         <div id="distance-section" class="filter-content open px-3.5 border-t border-sky-400/15">
                             <label class="flex items-center text-xs font-medium text-slate-200 cursor-pointer hover:text-cyan-300 py-1.5 transition-colors">
-                                <input type="radio" name="distance" value="all" checked class="cyber-radio mr-3" onchange="applyFilters()"> Show All
+                                <input type="radio" name="distance" value="all" autocomplete="off" checked class="cyber-radio mr-3" onchange="applyFilters()"> Show All
                             </label>
                             <label class="flex items-center text-xs font-medium text-slate-200 cursor-pointer hover:text-cyan-300 py-1.5 transition-colors">
-                                <input type="radio" name="distance" value="5" class="cyber-radio mr-3" onchange="applyFilters()"> Upto 5 Km Radius
+                                <input type="radio" name="distance" value="5" autocomplete="off" class="cyber-radio mr-3" onchange="applyFilters()"> Upto 5 Km Radius
                             </label>
                             <label class="flex items-center text-xs font-medium text-slate-200 cursor-pointer hover:text-cyan-300 py-1.5 transition-colors">
-                                <input type="radio" name="distance" value="10" class="cyber-radio mr-3" onchange="applyFilters()"> Upto 10 Km Radius
+                                <input type="radio" name="distance" value="10" autocomplete="off" class="cyber-radio mr-3" onchange="applyFilters()"> Upto 10 Km Radius
+                            </label>
+                            <label class="flex items-center text-xs font-medium text-slate-200 cursor-pointer hover:text-cyan-300 py-1.5 transition-colors">
+                                <input type="radio" name="distance" value="15" autocomplete="off" class="cyber-radio mr-3" onchange="applyFilters()"> Upto 15 Km Radius
                             </label>
                         </div>
                     </div>
@@ -696,10 +699,16 @@
                         </button>
                         <div id="beds-section" class="filter-content open px-3.5 border-t border-sky-400/15">
                             <label class="flex items-center text-xs font-medium text-slate-200 cursor-pointer hover:text-cyan-300 py-1.5 transition-colors">
-                                <input type="radio" name="beds" value="0" checked class="cyber-radio mr-3" onchange="applyFilters()"> Show All
+                                <input type="radio" name="beds" value="0" autocomplete="off" checked class="cyber-radio mr-3" onchange="applyFilters()"> Show All
                             </label>
                             <label class="flex items-center text-xs font-medium text-slate-200 cursor-pointer hover:text-cyan-300 py-1.5 transition-colors">
-                                <input type="radio" name="beds" value="5" class="cyber-radio mr-3" onchange="applyFilters()"> Min: 5 Beds
+                                <input type="radio" name="beds" value="5" autocomplete="off" class="cyber-radio mr-3" onchange="applyFilters()"> Min: 5 Beds
+                            </label>
+                            <label class="flex items-center text-xs font-medium text-slate-200 cursor-pointer hover:text-cyan-300 py-1.5 transition-colors">
+                                <input type="radio" name="beds" value="10" autocomplete="off" class="cyber-radio mr-3" onchange="applyFilters()"> Min: 10 Beds
+                            </label>
+                            <label class="flex items-center text-xs font-medium text-slate-200 cursor-pointer hover:text-cyan-300 py-1.5 transition-colors">
+                                <input type="radio" name="beds" value="15" autocomplete="off" class="cyber-radio mr-3" onchange="applyFilters()"> Min: 15 Beds
                             </label>
                         </div>
                     </div>
@@ -714,10 +723,13 @@
                         </button>
                         <div id="rating-section" class="filter-content open px-3.5 border-t border-sky-400/15">
                             <label class="flex items-center text-xs font-medium text-slate-200 cursor-pointer hover:text-cyan-300 py-1.5 transition-colors">
-                                <input type="radio" name="rating" value="0" checked class="cyber-radio mr-3" onchange="applyFilters()"> All Ratings
+                                <input type="radio" name="rating" value="0" autocomplete="off" checked class="cyber-radio mr-3" onchange="applyFilters()"> All Ratings
                             </label>
                             <label class="flex items-center text-xs font-medium text-slate-200 cursor-pointer hover:text-cyan-300 py-1.5 transition-colors">
-                                <input type="radio" name="rating" value="4.0" class="cyber-radio mr-3" onchange="applyFilters()"> 4.0+ Stars
+                                <input type="radio" name="rating" value="4.0" autocomplete="off" class="cyber-radio mr-3" onchange="applyFilters()"> 4.0+ Stars
+                            </label>
+                            <label class="flex items-center text-xs font-medium text-slate-200 cursor-pointer hover:text-cyan-300 py-1.5 transition-colors">
+                                <input type="radio" name="rating" value="4.5" autocomplete="off" class="cyber-radio mr-3" onchange="applyFilters()"> 4.5+ Stars
                             </label>
                         </div>
                     </div>
@@ -857,7 +869,7 @@
         <!-- Chatbot Pill Input Area -->
         <div class="p-3 bg-[#050c24]/95 border-t border-cyan-400/20 flex items-center">
             <div class="relative flex-1 flex items-center">
-                <input type="text" id="chatbot-input" placeholder="Ask about beds, specialties..." aria-label="Ask about beds or specialties" class="w-full bg-[#091534] text-white text-xs pl-4 pr-10 py-2.5 border border-cyan-400/40 focus:outline-none focus:border-cyan-300 focus:shadow-[0_0_12px_rgba(0,229,255,0.3)] font-medium rounded-full">
+                <input type="text" id="chatbot-input" placeholder="Ask about beds, specialties..." aria-label="Ask about beds or specialties" autocomplete="off" class="w-full bg-[#091534] text-white text-xs pl-4 pr-10 py-2.5 border border-cyan-400/40 focus:outline-none focus:border-cyan-300 focus:shadow-[0_0_12px_rgba(0,229,255,0.3)] font-medium rounded-full">
                 <button id="chatbot-send" aria-label="Send Message" class="absolute right-1.5 w-7 h-7 bg-gradient-to-r from-blue-500 to-cyan-400 text-white flex items-center justify-center hover:brightness-110 rounded-full shadow-[0_0_10px_rgba(0,229,255,0.6)] transition-all cursor-pointer">
                     <i class="fas fa-paper-plane text-[0.65rem]"></i>
                 </button>
@@ -1175,38 +1187,57 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            // 1. Force visual reset of filters to prevent browser caching conflicts on reload
+            const distAll = document.querySelector('input[name="distance"][value="all"]');
+            const bedsAll = document.querySelector('input[name="beds"][value="0"]');
+            const ratingAll = document.querySelector('input[name="rating"][value="0"]');
+            if (distAll) distAll.checked = true;
+            if (bedsAll) bedsAll.checked = true;
+            if (ratingAll) ratingAll.checked = true;
+            document.getElementById('hospitalSearch').value = '';
+
+            // 2. Fallback coordinates for Central Pune
+            const defaultPuneCoords = { lat: 18.5204, lng: 73.8567 };
+
+            // 3. Centralized applyDistances function
+            function applyDistances(userLat, userLng) {
+                const listContainer = document.getElementById('hospital-list');
+                const rows = Array.from(document.querySelectorAll('.hospital-row'));
+
+                rows.forEach(row => {
+                    const hId = row.getAttribute('data-id');
+                    const coords = hospitalCoords[hId];
+                    if(coords) {
+                        const dist = calculateDistance(userLat, userLng, coords.lat, coords.lng);
+                        row.dataset.distance = dist;
+                        const badge = row.querySelector('.distance-badge');
+                        if(badge) {
+                            badge.classList.remove('hidden');
+                            badge.querySelector('.dist-val').innerText = dist.toFixed(1);
+                        }
+                    }
+                });
+
+                rows.sort((a, b) => parseFloat(a.dataset.distance || 9999) - parseFloat(b.dataset.distance || 9999));
+                rows.forEach(row => listContainer.appendChild(row));
+                
+                applyFilters();
+            }
+
+            // 4. Geolocation fetch with immediate fallback
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
-                        const userLat = position.coords.latitude;
-                        const userLng = position.coords.longitude;
-                        const listContainer = document.getElementById('hospital-list');
-                        const rows = Array.from(document.querySelectorAll('.hospital-row'));
-
-                        rows.forEach(row => {
-                            const hId = row.getAttribute('data-id');
-                            const coords = hospitalCoords[hId];
-                            if(coords) {
-                                const dist = calculateDistance(userLat, userLng, coords.lat, coords.lng);
-                                row.dataset.distance = dist;
-                                const badge = row.querySelector('.distance-badge');
-                                if(badge) {
-                                    badge.classList.remove('hidden');
-                                    badge.querySelector('.dist-val').innerText = dist.toFixed(1);
-                                }
-                            }
-                        });
-
-                        rows.sort((a, b) => parseFloat(a.dataset.distance || 9999) - parseFloat(b.dataset.distance || 9999));
-                        rows.forEach(row => listContainer.appendChild(row));
-                        
-                        applyFilters();
+                        applyDistances(position.coords.latitude, position.coords.longitude);
                     },
-                    (error) => { applyFilters(); },
-                    { enableHighAccuracy: true }
+                    (error) => {
+                        console.warn("Location blocked/failed. Using default Pune coordinates.");
+                        applyDistances(defaultPuneCoords.lat, defaultPuneCoords.lng);
+                    },
+                    { enableHighAccuracy: true, timeout: 5000 }
                 );
             } else {
-                applyFilters();
+                applyDistances(defaultPuneCoords.lat, defaultPuneCoords.lng);
             }
         });
 
@@ -1357,6 +1388,45 @@
         chatbotInput.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 sendMessage();
+            }
+        });
+    </script>
+    
+    <!-- Websocket Listener for Auto-Refresh -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        const socket = io();
+        
+        // Listen for global bed updates from the backend
+        socket.on('global_network_refresh', async () => {
+            try {
+                // Silently fetch the updated frontend HTML
+                const response = await fetch(window.location.href);
+                const text = await response.text();
+                
+                // Parse the new HTML to extract updated bed counts
+                const parser = new DOMParser();
+                const newDoc = parser.parseFromString(text, 'text/html');
+                
+                // Update the DOM elements without reloading the page
+                document.querySelectorAll('.hospital-row').forEach(row => {
+                    const hId = row.getAttribute('data-id');
+                    
+                    const newTotal = newDoc.getElementById('total-' + hId);
+                    const newAvail = newDoc.getElementById('avail-' + hId);
+                    const newOcc = newDoc.getElementById('occ-' + hId);
+                    
+                    if (newTotal && newAvail && newOcc) {
+                        document.getElementById('total-' + hId).innerText = newTotal.innerText;
+                        document.getElementById('avail-' + hId).innerText = newAvail.innerText;
+                        document.getElementById('occ-' + hId).innerText = newOcc.innerText;
+                    }
+                });
+                
+                // Re-apply filters to live-hide/show hospitals based on the new vacant bed counts
+                if (typeof applyFilters === 'function') applyFilters();
+            } catch (error) {
+                console.error("Live update sync failed:", error);
             }
         });
     </script>

@@ -784,10 +784,22 @@ def get_hospital_beds(hospital_id):
     username = session.get('username')
     
     allowed_floors = None
+    referer = request.referrer or ""
     
-    # FIX: Grant full access to Admin Portal viewers and the default admin account
-    if is_admin or username == 'admin':
+    # 1. Strictly enforce staff permissions on the Nursing dashboard to prevent admin session bleed
+    if '/nursing' in referer and is_staff:
+        user = conn.execute('SELECT status, assigned_floors FROM staff WHERE hospital_id = ? AND username = ?', (hospital_id, username)).fetchone()
+        
+        if user and user['status'] == 'approved' and user['assigned_floors']:
+            allowed_floors = list(get_active_floors(user['assigned_floors']).keys())
+        else:
+            allowed_floors = [] 
+            
+    # 2. Grant full access if specifically requested by an active Admin session
+    elif is_admin:
         allowed_floors = None
+        
+    # 3. Fallback restriction for staff members hitting other endpoints (like /counter)
     elif is_staff:
         user = conn.execute('SELECT status, assigned_floors FROM staff WHERE hospital_id = ? AND username = ?', (hospital_id, username)).fetchone()
         
